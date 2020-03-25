@@ -1,0 +1,97 @@
+---
+default: 
+  scope: node
+  http_port: 8002
+  dc_name: test_dc_ws
+  dg_name: test_dg_ws
+  kv_system: consul
+
+agent:
+  work_path: /opt/agent
+  back_path: /opt/backup
+  pickle_file: agent.bin
+
+application:
+  work_path: /opt/service
+  back_path: /opt/backup
+  pickle_file: service.bin
+
+consul:
+  host: 127.0.0.1
+  port: 8500
+  watchs:
+    #- 
+    #  key: dc/DC_NAME/info
+    #  func: dc_info
+    #- 
+    #  key: dc/DC_NAME/agent
+    #  func: dc_agent
+    -
+      key: dc/DC_NAME/dg/DG_NAME/info
+      func: dg_info
+      type: application
+    -
+      key: dc/DC_NAME/dg/DG_NAME/agent
+      func: dg_agent
+      type: agent
+
+processes:
+  -
+    name: http
+    file: wshttp
+    class: HttpApp
+    func: process
+    queue: false
+  -
+    name: sentinel
+    file: sentinel
+    class: Sentinel
+    func: process
+    queue: false
+  - 
+    name: application
+    file: application
+    class: Application
+    func: process
+    queue: true
+  -
+    name: agent
+    file: agent
+    class: Agent
+    func: process
+    queue: true
+
+shm:
+  #kv:
+  #  agent:
+  #  application:
+  status:
+    agent:
+      intime: standby
+      expect: normal
+    application:
+      intime: standby
+      expect: normal
+    health:
+      intime: standby
+      expect: normal
+
+logging:
+  version: 1
+  disable_existing_loggers: false
+  formatters: 
+    default: 
+      format: "[%(asctime)s] [%(process)d] [%(thread)d] [%(filename)20s] [line:%(lineno)4d] [%(levelname)-6s] %(message)s"
+  handlers:
+    default:
+      level: DEBUG
+      formatter: default
+      class: logging.FileHandler
+      encoding: utf8
+      filename: /var/log/wspaas/FILE.log
+  loggers:
+    default:
+      handlers: 
+        - default
+      level: DEBUG
+      propagate: false
