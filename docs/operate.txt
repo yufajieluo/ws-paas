@@ -1,0 +1,100 @@
+{"service": "resource-manager","version": "v1.0.0","md5": "1234567890","download_url": "http://45.76.247.122:9000/public/resource-manager.tar.gz"}
+
+
+v1.0.0
+
+v1.0.1
+v1.0.2 error
+
+===== application ======
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v1.0.0","md5": "d45b67f1af757ac08513d382fca40f6f","download_url": "http://192.168.65.2:9000/public/resource-manager.v1.0.0.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v1.0.1","md5": "3b5c45196e56c131fd3ada575b854f8a","download_url": "http://192.168.65.2:9000/public/resource-manager.v1.0.1.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v1.0.2","md5": "ff5d5c5150acd41401fd50f50316dfdf","download_url": "http://192.168.65.2:9000/public/resource-manager.v1.0.2.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v1.0.3","md5": "6c70bccac02500f802d5fab5a7c26645","download_url": "http://192.168.65.2:9000/public/resource-manager.v1.0.3.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v1.0.5","md5": "aad4c36e0a8dfc801a0a64f6cae2aad4","download_url": "http://192.168.65.2:9000/public/resource-manager.v1.0.5.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:application '{"name": "resource-manager","version": "v2.0.0","md5": "2eea2bdf8e10cdde1812994f4a21bda7","download_url": "http://192.168.65.2:9000/public/resource-manager.v2.0.0.tar.gz"}'
+
+===== agent =======
+
+LPUSH task:test_dc_ws:test_dg_ws:agent '{"name": "agent-node","version": "v2.0.0","md5": "c94455ee3a3f90f4964388c2caa3909f","download_url": "http://192.168.65.2:9000/public/agent-node.v2.0.0.tar.gz"}'
+
+LPUSH task:test_dc_ws:test_dg_ws:agent '{"name": "agent-node","version": "v2.0.1","md5": "9abb0c8f4e1152a0387104e6906b1816","download_url": "http://192.168.65.2:9000/public/agent-node.v2.0.1.tar.gz"}'
+
+
+===== health ======
+
+LPUSH task:test_dc_ws:test_dg_ws:health '[{"name":"resource-manager-8000-http","type":"http","value":"http://PRIVATE_ADDR:8000/index.html","interval":10,"timeout":5,"healthy_threshold":3,"unhealthy_threshold":3},{"name":"resource-manager-8000-tcp","type":"tcp","value":"PRIVATE_ADDR:8080","interval":10,"timeout":5,"healthy_threshold":3,"unhealthy_threshold":3},{"name":"resource-manager-8000-script","type":"script","value":"scripts/healthcheck.sh","interval":10,"timeout":5,"healthy_threshold":3,"unhealthy_threshold":3}]'
+
+===== config ======
+LPUSH task:test_dc_ws:test_dg_ws:configure '{"default":{"addr":"0.0.0.0","port":8000}}'
+
+===== crond  ======
+LPUSH task:test_dc_ws:test_dg_ws:crond '[{"name":"date","type":"cmd","value":"date","crond":"* * * * *"}]'
+
+
+
+nohup supervise /opt/agent/content >/dev/null 2>&1 &
+http://39.100.54.37:8082/guard/media/package/agent-node.v2.0.0.tar.gz
+http://45.76.247.122:9000/public/agent-node.v2.0.0.tar.gz
+
+./mc config host add minio http://192.168.65.2:9000 minio miniominio S3v4
+
+
+
+
+
+curl --request PUT http://127.0.0.1:8500/v1/agent/service/deregister/resource-manager
+curl --request PUT --data name=resource-manager --data address=172.17.0.3 --data port=8000 http://127.0.0.1:8500/v1/agent/service/register
+curl --request PUT --data @t.json http://127.0.0.1:8500/v1/agent/service/register
+
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxx center xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+总个数 - 每次的 >= 预留的
+如果不满足，总个数 - 预留的
+
+{
+    mission_id: YYYYMMDDHHMMSS000001,
+    dc:[
+        {
+            info:{
+                
+            },
+            agent:{
+            }
+        },
+    ],
+    dg:[
+        {
+            info:{
+
+            },
+            agent:{
+
+            },
+            configure:{
+
+            },
+            health:{
+
+            },
+            crond:[
+
+            ]
+        }
+    ]
+    
+}
+
+
+{
+    mission_id: YYYYMMDDHHMMSS000001,
+    resp_status:
+    resp_reason:
+}

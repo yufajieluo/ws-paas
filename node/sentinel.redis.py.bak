@@ -1,0 +1,84 @@
+#!/usr/bin/python
+#-*-coding:utf-8-*-
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+# copyright 2020 WShuai, Inc.
+# All Rights Reserved.
+
+# @File: sentinel.py
+# @Author: WShuai, WShuai, Inc.
+# @Time: 2020/4/12 10:28
+
+import time
+import asyncio
+from .rapidReaction import RapidReaction
+from common.commRedis import RedisHandler
+
+class Sentinel(object):
+    def __init__(self, logger, configs):
+        self.logger = logger
+        self.shm = None
+        self.loop_tasks = []
+
+        self.watch_keys = configs['redis']['watchs']
+        for watch_key in self.watch_keys:
+            watch_key['key'] = watch_key['key'].replace(
+                'DC_NAME', configs['default']['dc_name']).replace(
+                'DG_NAME', configs['default']['dg_name']
+            )
+
+        self.rapid_reaction = RapidReaction()
+        self.redis_handler = RedisHandler(
+            host = configs['redis']['host'],
+            port = configs['redis']['port'],
+            pswd = configs['redis']['pswd'],
+            db = configs['redis']['db']
+        )
+        return
+    
+    async def watcher(self, **kwargs):
+        while True:
+            result = self.redis_handler.conn.rpop(kwargs['key'])
+            if result:
+                self.logger.info('from redis key {0} get queue msg is {1}'.format(kwargs['key'], result))
+                self.rapid_reaction.callback(
+                    type = kwargs['type'],
+                    key = kwargs['key'],
+                    value = result,
+                    func = kwargs['func'],
+                    shm = self.shm,
+                    logger = self.logger
+                )
+            else:
+                await asyncio.sleep(0.1)
+        return
+
+    def watching(self, **kwargs):
+        loop = asyncio.get_event_loop()
+        for watch_key in self.watch_keys:
+            self.loop_tasks.append(
+                loop.create_task(
+                    self.watcher(
+                        type = watch_key['type'],
+                        key = watch_key['key'],
+                        func = watch_key['func']
+                    )
+                )
+            )
+        loop.run_until_complete(asyncio.wait(self.loop_tasks))
+        return
+
+    def process(self, **kwargs):
+        interval = 0
+        while True:
+            if self.redis_handler.connect():
+                self.logger.info('connect to redis success.')
+                break
+            else:
+                interval += 1
+                self.logger.error('connect to redis failed, retry {}s later.'.format(interval))
+                time.sleep(interval)
+                continue
+            
+        self.shm = kwargs['shm']
+        self.watching()
+        return

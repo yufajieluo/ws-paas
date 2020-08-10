@@ -5,35 +5,46 @@ default:
   dc_name: test_dc_ws
   dg_name: test_dg_ws
   kv_system: consul
+  dyndns_url: http://wgetip.com
 
 agent:
   work_path: /opt/agent
   back_path: /opt/backup
-  pickle_file: agent.bin
+  down_path: /opt/download
+  temp_path: /opt/temp/agent
+  cron_path: /opt/crond
+  exec_path: /opt/bin
+  pickle_file: /opt/bin/agent.bin
 
 application:
   work_path: /opt/service
   back_path: /opt/backup
-  pickle_file: service.bin
+  down_path: /opt/download
+  temp_path: /opt/temp/application
+  cron_path: /opt/crond
+  exec_path: /opt/bin
+  pickle_file: /opt/bin/application.bin
 
-consul:
-  host: 127.0.0.1
+kv:
+  host: 172.17.0.2
   port: 8500
-  watchs:
-    #- 
-    #  key: dc/DC_NAME/info
-    #  func: dc_info
-    #- 
-    #  key: dc/DC_NAME/agent
-    #  func: dc_agent
-    -
-      key: dc/DC_NAME/dg/DG_NAME/info
-      func: dg_info
-      type: application
-    -
-      key: dc/DC_NAME/dg/DG_NAME/agent
-      func: dg_agent
-      type: agent
+  key: dc/DC_NAME/dg/DG_NAME/KEY
+
+redis:
+  host: 192.168.65.2
+  port: 6379
+  pswd:
+  db: 0
+  watch: task:DC_NAME:DG_NAME:KEY
+  #watchs:
+  #  - 
+  #    key: upgrade:DC_NAME:DG_NAME:application
+  #    func: dg_info
+  #    type: application
+  #  -
+  #    key: upgrade:DC_NAME:DG_NAME:agent
+  #    func: dg_agent
+  #    type: agent
 
 processes:
   -
@@ -41,39 +52,62 @@ processes:
     file: wshttp
     class: HttpApp
     func: process
-    queue: false
-  -
-    name: sentinel
-    file: sentinel
-    class: Sentinel
-    func: process
+    dependent: null
     queue: false
   - 
     name: application
     file: application
     class: Application
     func: process
-    queue: true
+    dependent: null
+    queue: false
   -
     name: agent
     file: agent
     class: Agent
     func: process
-    queue: true
+    dependent: null
+    queue: false
+  -
+    name: health
+    file: health
+    class: Health
+    func: process
+    dependent: application
+    queue: false
+  -
+    name: configure
+    file: configure
+    class: Configure
+    func: process
+    dependent: application
+    queue: false
+  -
+    name: crond
+    file: crond
+    class: Crond
+    func: process
+    dependent: application
+    queue: false
 
 shm:
-  #kv:
-  #  agent:
-  #  application:
+  running: true
+  maintain: false
   status:
     agent:
-      intime: standby
+      intime: normal
       expect: normal
     application:
-      intime: standby
+      intime: normal
       expect: normal
     health:
-      intime: standby
+      intime: normal
+      expect: normal
+    configure:
+      intime: normal
+      expect: normal
+    crond:
+      intime: normal
       expect: normal
 
 logging:

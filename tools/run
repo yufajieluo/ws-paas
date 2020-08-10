@@ -1,0 +1,6 @@
+#!/bin/bash
+
+app=agent-node
+basepath=$(cd `dirname $0`; pwd)
+
+venv/bin/python main.py --type node --conf config --name ${app}

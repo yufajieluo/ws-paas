@@ -49,12 +49,7 @@ class Sentinel(object):
                     qrf_func = watch_key[\'func\']\
                 )'.format(self.kv_watch)
             )
-            #key_watch_obj = Watch(
-            #    watch_key['key'],
-            #    self.kv_handler,
-            #    self.rapid_reaction.qrf,
-            #    watch_key['func']
-            #)
+            
             process_watch = multiprocessing.Process(
                 target = key_watch_obj.run,
                 name = watch_key['key'],

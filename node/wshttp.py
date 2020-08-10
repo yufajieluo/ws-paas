@@ -12,10 +12,10 @@ import tornado.web
 import tornado.ioloop
 
 class HttpApp(object):
-    def __init__(self, logger, configs):
+    def __init__(self, **kwargs):
         self.app = None
-        self.port = configs['default']['http_port']
-        self.logger = logger
+        self.port = kwargs['configs']['default']['http_port']
+        self.logger = kwargs['logger']
         return
     
     def make_app(self):
@@ -29,7 +29,6 @@ class HttpApp(object):
         self.make_app()
         self.app.listen(self.port)
         tornado.ioloop.IOLoop.current().start()
-
 
 class MainHandler(tornado.web.RequestHandler):
     def initialize(self, logger):

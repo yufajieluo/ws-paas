@@ -9,18 +9,31 @@
 # @Time: 2020/3/2 10:28
 
 import os
+import yaml
 import pickle
 
-class commFile(object):
-    def __init__():
+class FileHandler(object):
+    def __init__(self):
         return
 
-    def dump(self, dump_file, dump_content):
-        with open(dump_file, 'wb') as file_handler:
-            pickle.dump(dump_content, file_handler)
+    def dumps(self, **kwargs):
+        if kwargs['type'] == 'yaml':
+            with open(kwargs['file'], 'w', encoding = 'utf-8') as file_handler:
+                yaml.dump(kwargs['content'], file_handler)
+        elif kwargs['type'] == 'pickle':
+            with open(kwargs['file'], 'wb') as file_handler:
+                pickle.dump(kwargs['content'], file_handler)
+        
         return
     
-    def loads(self, load_file):
-        with open(load_file, 'rb') as file_handler:
-            load_content = pickle.load(file_handler)
-        return load_file
+    def loads(self, **kwargs):
+        content = None
+        try:
+            with open(kwargs['file'], 'rb') as file_handler:
+                if kwargs['type'] == 'yaml':
+                    content = yaml.safe_load(file_handler)
+                elif kwargs['type'] == 'pickle':
+                    content = pickle.load(file_handler)
+        except:
+            pass
+        return content

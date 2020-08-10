@@ -9,6 +9,7 @@
 # @Time: 2020/3/12 10:28
 
 import os
+import tarfile
 
 class PressHandler(object):
     def __init__(self):
@@ -32,7 +33,7 @@ class PressHandler(object):
     def uncommpress(self, **kwargs):
         if os.path.isfile(kwargs['tarfile']):
             with tarfile.open(kwargs['tarfile'], 'r') as tar_handler:
-                tar_handler.extractall(path = kwargs['tarpath'])
+                tar_handler.extractall(path = kwargs['target'])
             result = True
         else:
             result = False

@@ -10,19 +10,17 @@
 
 import json
 import inspect
-from .agent import Agent
 
 class RapidReaction(object):
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self):
         return
 
-    def qrf(self, **kwargs):
-        func_name = 'qrf_{0}'.format(kwargs['func'])
+    def callback(self, **kwargs):
+        func_name = 'callback_{0}'.format(kwargs['func'])
         cls_funcs = inspect.getmembers(self, callable)
         if func_name not in [cls_func[0] for cls_func in cls_funcs]:
             self.logger.error(
-                'key {0} qrf function {1} not found, please check configuration.'.format(
+                'key {0} callback function {1} not found, please check configuration.'.format(
                     kwargs['key'], 
                     kwargs['func']
                 )
@@ -36,13 +34,13 @@ class RapidReaction(object):
             )
         return
     
-    def qrf_dg_info(self, **kwargs):
+    def callback_dg_info(self, **kwargs):
         kwargs['logger'].debug('this is {0}, value is {1}'.format(inspect.stack()[0][3], kwargs['value']))
         if kwargs['type'] in kwargs['shm']['queue'].keys():
             kwargs['shm']['queue'][kwargs['type']].put(kwargs['value'], 5)
         return
 
-    def qrf_dg_agent(self, **kwargs):
+    def callback_dg_agent(self, **kwargs):
         kwargs['logger'].debug('this is {0}, value is {1}'.format(inspect.stack()[0][3], kwargs['value']))
         #kwargs['shm']['kv']['agent'] = json.loads(kwargs['value'])
         return

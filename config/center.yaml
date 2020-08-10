@@ -1,0 +1,159 @@
+---
+default: 
+  scope: center
+  dc_name: test_dc_ws
+  kv_system: consul
+  dyndns_url: http://wgetip.com
+
+processes:
+  -
+    name: wshttp
+    file: wshttp
+    class: Wshttp
+    dependent: null
+#  -
+#    name: agent
+#    file: agent
+#    class: Agent
+#    dependent: null
+  -
+    name: pool
+    file: pool
+    class: Pool
+    dependent: null
+
+shm:
+  running: true
+  maintain: false
+  status:
+    agent:
+      intime: normal
+      expect: normal
+    wshttp:
+      intime: normal
+      expect: normal
+    pool:
+      intime: normal
+      expect: normal
+
+queue:
+  size: 10
+  timeout: 1
+
+wshttp:
+  port: 8002
+  single_timeout: 5
+  urls:
+    -
+      name: dc:info
+      domain: dc
+      notify_redis: False
+      url: /dc/info
+      methods:
+        - PUT
+    -
+      name: dc:agent
+      domain: dc
+      notify_redis: False
+      url: /dc/agent
+      methods:
+        - PUT
+    -
+      name: dg:info
+      domain: dg
+      notify_redis: False
+      url: /dc/dg/info
+      methods:
+        - PUT
+    -
+      name: dg:agent
+      domain: dg
+      notify_redis: True
+      url: /dc/dg/agent
+      methods:
+        - PUT
+    -
+      name: dg:policy
+      domain: dg
+      notify_redis: False
+      url: /dc/dg/policy
+      methods:
+        - PUT
+    -
+      name: dg:crond
+      domain: dg
+      notify_redis: True
+      url: /dc/dg/crond
+      methods:
+        - PUT
+    -
+      name: dg:health
+      domain: dg
+      notify_redis: True
+      url: /dc/dg/health
+      methods:
+        - PUT
+    -
+      name: dg:configure
+      domain: dg
+      notify_redis: True
+      url: /dc/dg/configure
+      methods:
+        - PUT
+    -
+      name: dg:application
+      domain: dg
+      notify_redis: True
+      url: /dc/dg/application
+      methods:
+        - PUT
+
+    
+##############################
+
+agent:
+  work_path: /opt/agent
+  back_path: /opt/backup
+  down_path: /opt/download
+  temp_path: /opt/temp/agent
+  exec_path: /opt/bin
+  pickle_file: /opt/bin/agent.bin
+
+#############################
+
+pool:
+  min_num: 5
+  max_num: 10
+
+kv:
+  host: 172.17.0.2
+  port: 8500
+  key_dc: dc/DC_NAME/KEY
+  key_dg: dc/DC_NAME/dg/DG_NAME/KEY
+
+redis:
+  host: 192.168.65.2
+  port: 6379
+  pswd:
+  db: 0
+  key: TYPE:DC_NAME:DG_NAME:KEY:INSTANCE  
+
+logging:
+  version: 1
+  disable_existing_loggers: false
+  formatters: 
+    default: 
+      format: "[%(asctime)s] [%(process)d] [%(thread)d] [%(filename)20s] [line:%(lineno)4d] [%(levelname)-6s] %(message)s"
+  handlers:
+    default:
+      level: DEBUG
+      formatter: default
+      class: logging.FileHandler
+      encoding: utf8
+      filename: /var/log/wspaas/FILE.log
+  loggers:
+    default:
+      handlers: 
+        - default
+      level: DEBUG
+      propagate: false
